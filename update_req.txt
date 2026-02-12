@@ -1,0 +1,19 @@
+youtube automation update
+
+1.descripition timeline problem
+
+2. output saving at same file for mix tape audio and video and path is hardcoded 
+
+3.normalization req.
+
+
+
+
+Future Scope
+The project opens the door to several future enhancements:
+• Adding AI‐based genre detection.
+• Auto‐upload to YouTube via API.
+• Allowing users to choose transition styles.
+• Adding waveform visualizers in the video.
+• Creating user accounts and saving project history.
+These improvements can help turn the project into a full commercial‐grade product.

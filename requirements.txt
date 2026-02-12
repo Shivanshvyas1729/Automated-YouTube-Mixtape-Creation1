@@ -1,0 +1,25 @@
+# cross fade / audio processing
+pydub==0.25.1
+ffmpeg-python==0.2.0
+imageio-ffmpeg==0.4.9
+
+# beat matching / audio analysis
+librosa==0.11.0
+numpy==1.26.4
+scipy==1.15.3
+
+# backend
+fastapi==0.122.0
+uvicorn[standard]==0.38.0
+python-multipart==0.0.20
+aiofiles==25.1.0
+requests==2.32.5
+Pillow==12.0.0
+moviepy==1.0.3
+
+# frontend
+streamlit==1.51.0
+
+# notebooks / experiments
+ipykernel==7.1.0
+matplotlib==3.10.7

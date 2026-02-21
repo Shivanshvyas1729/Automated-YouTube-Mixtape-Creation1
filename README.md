@@ -1,3 +1,6 @@
+https://takeattendances.streamlit.app/
+https://takemyattendance.streamlit.app/
+
 
 # 🎧 Automated YouTube Mixtape Creation
 

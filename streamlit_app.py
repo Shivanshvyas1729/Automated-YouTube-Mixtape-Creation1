@@ -7,13 +7,12 @@ import streamlit as st
 from pydub import AudioSegment
 from moviepy.editor import ImageClip, AudioFileClip
 
-# ===================== CONFIG =====================
+# ===================== PATHS =====================
 APP_DIR = Path(__file__).resolve().parent
-BASE_DIR = APP_DIR.parent
 
-UPLOAD_ROOT = BASE_DIR / "uploaded"
-IMAGES_DIR = BASE_DIR / "images"
-OUTPUT_DIR = BASE_DIR / "output"
+UPLOAD_ROOT = APP_DIR / "uploaded"
+IMAGES_DIR = APP_DIR / "images"
+OUTPUT_DIR = APP_DIR / "output"
 
 UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
 IMAGES_DIR.mkdir(parents=True, exist_ok=True)
@@ -100,10 +99,8 @@ def generate_youtube_description_with_timestamps(
         description += f"{timestamp} - {name}\n"
         current_time += duration_sec
 
-    description += "\n💽 Download/Listen links:\nYou can find these tracks online.\n\n"
-    description += "🎧 Follow for more mixes!\n\n"
-    description += "#Mixtape #DJMix #HouseMusic #MusicMix"
-
+    description += "\n🎧 Follow for more mixes!\n"
+    description += "\n#Mixtape #DJMix #HouseMusic #MusicMix"
     return description
 
 
@@ -120,15 +117,13 @@ def make_video_from_audio(image_path, audio_path, output_filename="mixtape_vid.m
     output_path = OUTPUT_DIR / output_filename
 
     audio = AudioFileClip(str(audio_path))
-    video = (
-        ImageClip(str(image_path))
-        .set_duration(audio.duration)
-        .set_audio(audio)
-    )
+    video = ImageClip(str(image_path)).set_duration(audio.duration).set_audio(audio)
 
     video.write_videofile(
         str(output_path),
-        fps=1
+        fps=1,
+        codec="libx264",
+        audio_codec="aac"
     )
 
     video.close()
@@ -137,7 +132,7 @@ def make_video_from_audio(image_path, audio_path, output_filename="mixtape_vid.m
     return output_path
 
 
-# ===================== STREAMLIT UI =====================
+# ===================== UI =====================
 st.set_page_config(page_title="YouTube Mixtape Automation", layout="centered")
 st.title("YouTube Mixtape Automation")
 
@@ -159,14 +154,14 @@ if st.button("Upload tracks"):
             saved = save_uploaded_audio_files(uploaded_audio, job_prefix)
             st.success(f"Uploaded {len(saved)} file(s) successfully.")
             for f in saved:
-                st.write(f"Saved: {f}")
+                st.write(f"Saved: {f.name}")
     except Exception as e:
         st.error(f"Upload failed: {e}")
         st.code(traceback.format_exc())
 
 existing_tracks = get_audio_files(job_prefix)
 if existing_tracks:
-    st.subheader("Current tracks in this job")
+    st.subheader("Current tracks")
     for track in existing_tracks:
         st.write(track.name)
 
@@ -253,9 +248,9 @@ if st.button("Create video"):
             with open(image_path, "wb") as f:
                 f.write(image_file.getbuffer())
 
-            st.success(f"Image saved: {image_path}")
+            st.success(f"Image saved: {image_path.name}")
 
-            with st.spinner("Creating video... this can take a bit depending on file size"):
+            with st.spinner("Creating video..."):
                 video_path = make_video_from_audio(
                     image_path=image_path,
                     audio_path=audio_file_name,

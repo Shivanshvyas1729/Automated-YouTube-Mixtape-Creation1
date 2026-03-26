@@ -15,7 +15,34 @@ python-multipart==0.0.20
 aiofiles==25.1.0
 requests==2.32.5
 Pillow==12.0.0
+moviepy==1.0.3# ===== Core audio processing =====
+pydub==0.25.1
+ffmpeg-python==0.2.0
+imageio-ffmpeg==0.4.9
 moviepy==1.0.3
+
+# ===== Audio analysis =====
+librosa==0.11.0
+numpy==1.26.4
+scipy==1.11.4   # ⚠️ downgraded (more stable for cloud)
+
+# ===== Backend (optional but fine) =====
+fastapi==0.122.0
+uvicorn[standard]==0.38.0
+python-multipart==0.0.20
+aiofiles==25.1.0
+requests==2.32.5
+Pillow==12.0.0
+
+# ===== Frontend =====
+streamlit==1.51.0
+
+# ===== Compatibility fix =====
+setuptools==69.5.1
+
+# ===== Optional (safe additions) =====
+decorator==4.4.2
+tqdm==4.67.3
 
 # frontend
 streamlit==1.51.0

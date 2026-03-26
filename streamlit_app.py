@@ -1,6 +1,7 @@
 import os
 import random
 import traceback
+import time
 from pathlib import Path
 
 import streamlit as st
@@ -19,6 +20,28 @@ IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_AUDIO_EXT = (".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg")
+
+
+# ===================== AUTO CLEANUP =====================
+def cleanup_old_files(folder_path, max_age_seconds=600):
+    now = time.time()
+
+    for file in Path(folder_path).glob("*"):
+        if file.is_file():
+            file_age = now - file.stat().st_mtime
+
+            if file_age > max_age_seconds:
+                try:
+                    os.remove(file)
+                    print(f"Deleted old file: {file}")
+                except Exception as e:
+                    print(f"Error deleting {file}: {e}")
+
+
+# ✅ Run cleanup on every app start/rerun
+cleanup_old_files(OUTPUT_DIR, 600)
+cleanup_old_files(UPLOAD_ROOT, 600)
+cleanup_old_files(IMAGES_DIR, 600)
 
 
 # ===================== HELPERS =====================
@@ -159,11 +182,6 @@ if st.button("Upload tracks"):
         st.error(f"Upload failed: {e}")
         st.code(traceback.format_exc())
 
-existing_tracks = get_audio_files(job_prefix)
-if existing_tracks:
-    st.subheader("Current tracks")
-    for track in existing_tracks:
-        st.write(track.name)
 
 # ---------------- CREATE MIXTAPE ----------------
 st.header("2. Create mixtape")
@@ -187,56 +205,16 @@ if st.button("Create mixtape"):
             st.success("Mixtape created successfully!")
             st.audio(str(mp3_path))
 
-            with open(mp3_path, "rb") as f:
-                st.download_button(
-                    label="Download mixtape MP3",
-                    data=f,
-                    file_name=mp3_path.name,
-                    mime="audio/mpeg"
-                )
-
-            st.session_state["latest_mp3_path"] = str(mp3_path)
-
     except Exception as e:
         st.error(f"Mixtape creation failed: {e}")
         st.code(traceback.format_exc())
 
-# ---------------- GENERATE DESCRIPTION ----------------
-st.header("3. Generate YouTube description")
-mixtape_name = st.text_input("Mixtape name", value="Afro House Mix")
-genre = st.text_input("Genre", value="Afro House")
-
-if st.button("Generate description"):
-    try:
-        files = get_audio_files(job_prefix)
-
-        if not files:
-            st.error("No tracks found for this job.")
-        else:
-            description = generate_youtube_description_with_timestamps(
-                files,
-                mixtape_name=mixtape_name,
-                genre=genre
-            )
-
-            st.text_area("Generated Description", value=description, height=300)
-            st.session_state["latest_description"] = description
-
-    except Exception as e:
-        st.error(f"Description generation failed: {e}")
-        st.code(traceback.format_exc())
 
 # ---------------- MAKE VIDEO ----------------
-st.header("4. Make video from mixtape")
+st.header("3. Make video from mixtape")
 
-image_file = st.file_uploader(
-    "Upload background image",
-    type=["jpg", "jpeg", "png"],
-    key="video_image_uploader"
-)
-
-default_audio_path = st.session_state.get("latest_mp3_path", str(OUTPUT_DIR / "mixtape.mp3"))
-audio_file_name = st.text_input("Audio path", value=default_audio_path)
+image_file = st.file_uploader("Upload background image", type=["jpg", "jpeg", "png"])
+audio_file_name = st.text_input("Audio path", value=str(OUTPUT_DIR / "mixtape.mp3"))
 video_name = st.text_input("Output video filename", value="mixtape_vid.mp4")
 
 if st.button("Create video"):
@@ -248,8 +226,6 @@ if st.button("Create video"):
             with open(image_path, "wb") as f:
                 f.write(image_file.getbuffer())
 
-            st.success(f"Image saved: {image_path.name}")
-
             with st.spinner("Creating video..."):
                 video_path = make_video_from_audio(
                     image_path=image_path,
@@ -260,26 +236,6 @@ if st.button("Create video"):
             st.success("Video created successfully!")
             st.video(str(video_path))
 
-            with open(video_path, "rb") as f:
-                st.download_button(
-                    label="Download video",
-                    data=f,
-                    file_name=video_path.name,
-                    mime="video/mp4"
-                )
-
-            st.session_state["latest_video_path"] = str(video_path)
-
     except Exception as e:
         st.error(f"Video creation failed: {e}")
         st.code(traceback.format_exc())
-
-# ---------------- OUTPUT FILES ----------------
-st.header("5. Existing output files")
-
-output_files = sorted(OUTPUT_DIR.glob("*"))
-if output_files:
-    for file_path in output_files:
-        st.write(file_path.name)
-else:
-    st.info("No output files yet.")
